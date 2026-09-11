@@ -46,7 +46,7 @@ export default function Home() {
             <span className="text-orange-500 font-bold tracking-widest uppercase text-sm">Tentang Kami</span>
             <h2 className="text-3xl font-extrabold text-slate-900 mt-2 mb-6">Merawat Sepenuh Hati, <br/>Layaknya Keluarga Sendiri.</h2>
             <p className="text-slate-600 mb-6 leading-relaxed">
-              Didirikan oleh pecinta kucing, **CatHotel Care** berdedikasi memberikan pengalaman menginap yang bebas stres dan menyenangkan bagi anabul Anda. Kami memahami kekhawatiran Anda saat harus meninggalkan mereka.
+              Didirikan oleh pecinta kucing, CatHotel Care berdedikasi memberikan pengalaman menginap yang bebas stres dan menyenangkan bagi anabul Anda. Kami memahami kekhawatiran Anda saat harus meninggalkan mereka.
             </p>
             <p className="text-slate-600 leading-relaxed">
               Dengan staf profesional, fasilitas modern, dan pembaruan informasi rutin, kami pastikan setiap detik anabul Anda di sini dipenuhi dengan kasih sayang dan rasa aman.

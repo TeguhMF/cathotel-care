@@ -17,7 +17,7 @@ const rooms = [
       'Pemberian makan 2x sehari',
       'Pembersihan kandang rutin'
     ],
-    imageUrl: 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=600&q=80'
+    imageUrl: 'src/assets/kandang 1.png'
   },
   {
     id: 'deluxe',
@@ -34,7 +34,7 @@ const rooms = [
       'Litter box & pasir wangi',
       'Update foto/video via WA 1x/hari'
     ],
-    imageUrl: 'https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?auto=format&fit=crop&w=600&q=80'
+    imageUrl: 'src/assets/kandang 2.png'
   },
   {
     id: 'vip',
@@ -51,7 +51,7 @@ const rooms = [
       'Free Grooming (Min. inap 5 hari)',
       'Update foto & video harian kapan saja'
     ],
-    imageUrl: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=600&q=80'
+    imageUrl: 'src/assets/kandang 3.png'
   }
 ];
 
