@@ -1,20 +1,21 @@
 import React from 'react';
 import Hero from '../components/Hero';
+import Testimonials from '../components/Testimonials'; // <-- 1. Import Testimonials
 import { Snowflake, Video, Gamepad2, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <main className="bg-slate-50 min-h-screen">
       <Hero />
 
       {/* SECTION FASILITAS */}
       <section id="fasilitas" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 relative">
           <span className="text-orange-500 font-bold tracking-widest uppercase text-sm">Fasilitas Kami</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">Kenyamanan Ekstra Untuk <span className="text-orange-500">Anabul</span></h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
           {[
             { title: "Kamar Full AC", desc: "Suhu ruangan selalu dijaga pada 24°C untuk kenyamanan maksimal.", icon: Snowflake },
             { title: "Area Bermain Luas", desc: "Sesi playtime harian dengan cat tree dan mainan interaktif.", icon: Gamepad2 },
@@ -42,18 +43,22 @@ export default function Home() {
               className="rounded-3xl shadow-xl border-4 border-white object-cover h-96 w-full"
             />
           </div>
-          <div className="w-full md:w-1/2">
+          <div className="w-full md:w-1/2 relative">
             <span className="text-orange-500 font-bold tracking-widest uppercase text-sm">Tentang Kami</span>
-            <h2 className="text-3xl font-extrabold text-slate-900 mt-2 mb-6">Merawat Sepenuh Hati, <br/>Layaknya Keluarga Sendiri.</h2>
-            <p className="text-slate-600 mb-6 leading-relaxed">
+            <h2 className="text-3xl font-extrabold text-slate-900 mt-2 mb-6 tracking-tight">Merawat Sepenuh Hati, <br/>Layaknya Keluarga Sendiri.</h2>
+            <p className="text-slate-600 mb-6 leading-relaxed text-sm">
               Didirikan oleh pecinta kucing, CatHotel Care berdedikasi memberikan pengalaman menginap yang bebas stres dan menyenangkan bagi anabul Anda. Kami memahami kekhawatiran Anda saat harus meninggalkan mereka.
             </p>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed text-sm">
               Dengan staf profesional, fasilitas modern, dan pembaruan informasi rutin, kami pastikan setiap detik anabul Anda di sini dipenuhi dengan kasih sayang dan rasa aman.
             </p>
           </div>
         </div>
       </section>
-    </div>
+
+      {/* 2. Panggil Section Testimoni */}
+      <Testimonials />
+
+    </main>
   );
 }

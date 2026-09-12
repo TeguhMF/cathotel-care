@@ -1,27 +1,27 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, Users, CalendarDays, Wallet, 
-  Settings, LogOut, Search, Bell, Cat, Inbox, Plus, Filter
+  Settings, LogOut, Search, Bell, Cat, Inbox, Plus, Filter, Download
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeMenu, setActiveMenu] = useState('dashboard'); // 'dashboard' | 'booking' | 'customers'
+  const [activeMenu, setActiveMenu] = useState('dashboard');
 
   const handleLogout = () => {
     alert("Berhasil Logout dari Admin!");
     navigate('/');
   };
 
-  // Data State Dikosongkan
-  const bookings = [];
-  const customers = [];
+  const handleExport = (format, type) => {
+    alert(`Memproses Export Data ${type} ke format ${format.toUpperCase()}...\nFile simulasi siap diunduh!`);
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-50 flex overflow-hidden font-sans">
       
-      {/* ================= SISI KIRI: SIDEBAR ================= */}
+      {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0">
         <div className="h-20 flex items-center gap-3 px-6 border-b border-slate-800">
           <div className="p-2.5 bg-orange-500 rounded-2xl text-white shadow-md shadow-orange-500/20">
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* ================= SISI KANAN: KONTEN UTAMA ================= */}
+      {/* MAIN KONTEN */}
       <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
         
         {/* Topbar */}
@@ -91,17 +91,17 @@ export default function AdminDashboard() {
                 AD
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">Admin</p>
-                <p className="text-xs text-slate-500">Kelompok 10</p>
+                <p className="text-sm font-bold text-slate-800">Admin Utama</p>
+                <p className="text-xs text-slate-500">Superadmin</p>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Area Scrollable Konten */}
+        {/* Dynamic Content */}
         <div className="flex-1 overflow-y-auto p-8">
           
-          {/* 1. TAMPILAN DASHBOARD */}
+          {/* DASHBOARD */}
           {activeMenu === 'dashboard' && (
             <div>
               <div className="mb-8">
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* 2. TAMPILAN MANAJEMEN RESERVASI */}
+          {/* RESERVASI */}
           {activeMenu === 'booking' && (
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -147,6 +147,13 @@ export default function AdminDashboard() {
                   <p className="text-sm text-slate-500 mt-1">Daftar seluruh transaksi pemesanan dan pelunasan DP.</p>
                 </div>
                 <div className="flex gap-3">
+                  <button 
+                    onClick={() => handleExport('excel', 'Reservasi')}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-100 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export Excel</span>
+                  </button>
                   <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-all">
                     <Filter className="w-4 h-4" />
                     <span>Filter Status</span>
@@ -170,7 +177,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* 3. TAMPILAN MANAJEMEN PELANGGAN */}
+          {/* PELANGGAN */}
           {activeMenu === 'customers' && (
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -178,10 +185,19 @@ export default function AdminDashboard() {
                   <h1 className="text-2xl font-bold text-slate-800">Data Pelanggan</h1>
                   <p className="text-sm text-slate-500 mt-1">Daftar pemilik kucing yang terdaftar di CatHotel Care.</p>
                 </div>
-                <button className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all">
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Pelanggan</span>
-                </button>
+                <div className="flex gap-3">
+                  <button 
+                    onClick={() => handleExport('pdf', 'Pelanggan')}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-semibold hover:bg-rose-100 transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export PDF</span>
+                  </button>
+                  <button className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all">
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Pelanggan</span>
+                  </button>
+                </div>
               </div>
 
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden py-20 text-center flex flex-col items-center justify-center">
