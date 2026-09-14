@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Calendar, User, Phone, Cat, CreditCard, CheckCircle, ShieldCheck } from 'lucide-react';
+import { User, Phone, Cat, CreditCard, ShieldCheck } from 'lucide-react';
+import api from '../api/axios';
 
 export default function BookingForm({ selectedRoom, bookingDuration, selectedServices }) {
   const [formData, setFormData] = useState({
@@ -11,7 +12,9 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
     notes: '',
   });
 
-  // Kalkulasi Total Biaya
+  const [loading, setLoading] = useState(false);
+
+  // Kalkulasi Total Biaya (Frontend)
   const roomPriceTotal = selectedRoom ? selectedRoom.price * bookingDuration : 0;
   const servicesPriceTotal = selectedServices.reduce((sum, item) => sum + item.price, 0);
   const grandTotal = roomPriceTotal + servicesPriceTotal;
@@ -24,24 +27,87 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmitBooking = (e) => {
+  // Menghitung tanggal check-out berdasarkan check-in + durasi
+  const getCheckOutDate = (checkInStr, durationDays) => {
+    if (!checkInStr) return '';
+    const date = new Date(checkInStr);
+    date.setDate(date.getDate() + parseInt(durationDays || 1));
+    return date.toISOString().split('T')[0];
+  };
+
+const handleSubmitBooking = async (e) => {
     e.preventDefault();
     if (!selectedRoom) {
       alert("Silakan pilih kamar terlebih dahulu dari Katalog Kamar!");
       return;
     }
 
-    // Simulasi pemanggilan Midtrans Snap
-    alert(
-      `[SIMULASI MIDTRANS SNAP]\n\n` +
-      `Pemesan: ${formData.ownerName}\n` +
-      `Kucing: ${formData.catName}\n` +
-      `Kamar: ${selectedRoom.name} (${bookingDuration} Hari)\n` +
-      `Total Biaya: Rp ${grandTotal.toLocaleString('id-ID')}\n\n` +
-      `-> Wajib DP (30%): Rp ${dpAmount.toLocaleString('id-ID')}\n` +
-      `-> Sisa di Lokasi: Rp ${remainingAmount.toLocaleString('id-ID')}`
-    );
-  };
+    setLoading(true);
+
+    try {
+      const checkOutDate = getCheckOutDate(formData.checkInDate, bookingDuration);
+
+      // Pastikan room_id selalu valid (fallback ke ID 1 jika objek room tidak memiliki field .id)
+      const validRoomId = selectedRoom.id || selectedRoom.room_id || 1;
+
+      // 1. Kirim data reservasi ke Backend Laravel
+      const response = await api.post('/bookings', {
+        room_id: validRoomId,
+        customer_name: formData.ownerName,
+        customer_phone: formData.phone,
+        cat_name: formData.catName,
+        cat_breed: formData.catBreed || 'Domestic',
+        check_in: formData.checkInDate,
+        check_out: checkOutDate,
+        notes: formData.notes,
+      });
+
+      const { snap_token } = response.data.data;
+
+      // 2. Memunculkan Popup Midtrans Snap
+      if (window.snap && !snap_token.startsWith('DEV-MOCK')) {
+        window.snap.pay(snap_token, {
+          onSuccess: function (result) {
+            alert('Pembayaran DP Berhasil!');
+            console.log('Success:', result);
+          },
+          onPending: function (result) {
+            alert('Menunggu Pembayaran DP!');
+            console.log('Pending:', result);
+          },
+          onError: function (result) {
+            alert('Pembayaran Gagal!');
+            console.log('Error:', result);
+          },
+          onClose: function () {
+            alert('Anda menutup popup pembayaran.');
+          },
+        });
+      } else {
+        // Fallback untuk lingkungan Dev / Mock Token
+        alert(`[DEV/MOCK MODE]\n\nReservasi Berhasil dibuat!\nCode Token: ${snap_token}`);
+      }
+      } catch (error) {
+      console.error('Error submitting booking:', error);
+      
+      // Ambil pesan error spesifik dari Laravel jika ada
+      const responseData = error.response?.data;
+      let errorMsg = 'Gagal membuat reservasi.';
+
+      if (responseData) {
+        if (responseData.errors) {
+          // Gabungkan pesan validasi Laravel (contoh: check_out after check_in, format tanggal, dll)
+          errorMsg = Object.values(responseData.errors).flat().join('\n');
+        } else if (responseData.message) {
+          errorMsg = responseData.message;
+        }
+      }
+
+      alert(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <section id="booking-form" className="py-20 bg-slate-50 border-t border-slate-200/80">
@@ -62,7 +128,7 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Sisi Kiri: Form Input Data (8 Kolom) */}
+          {/* Sisi Kiri: Form Input Data */}
           <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
               <User className="w-5 h-5 text-orange-500" />
@@ -149,15 +215,18 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
 
               <button
                 type="submit"
-                className="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 text-base mt-4"
+                disabled={loading}
+                className="w-full py-4 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-400 text-white font-bold rounded-2xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 text-base mt-4 cursor-pointer"
               >
                 <CreditCard className="w-5 h-5" />
-                <span>Bayar DP Sekarang (Rp {dpAmount.toLocaleString('id-ID')})</span>
+                <span>
+                  {loading ? 'Memproses Backend...' : `Bayar DP Sekarang (Rp ${dpAmount.toLocaleString('id-ID')})`}
+                </span>
               </button>
             </form>
           </div>
 
-          {/* Sisi Kanan: Ringkasan Rincian Biaya (5 Kolom) */}
+          {/* Sisi Kanan: Ringkasan Rincian Biaya */}
           <div className="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm sticky top-28">
             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
               <Cat className="w-5 h-5 text-orange-500" />
@@ -219,7 +288,7 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
             {/* Informasi Keamanan */}
             <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3 text-xs text-slate-500">
               <ShieldCheck className="w-8 h-8 text-emerald-500 shrink-0" />
-              <span>Pembayaran DP dijamin aman & terverifikasi.</span>
+              <span>Pembayaran DP dijamin aman & terverifikasi via Midtrans.</span>
             </div>
           </div>
 

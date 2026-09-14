@@ -9,7 +9,12 @@ export default function BookingPage() {
   const [selectedServices, setSelectedServices] = useState([]);
 
   const handleSelectRoom = (room, duration) => {
-    setSelectedRoom(room);
+    // Memastikan objek room yang disimpan memiliki field id
+    const roomWithId = {
+      ...room,
+      id: room.id || room.room_id || 1,
+    };
+    setSelectedRoom(roomWithId);
     setBookingDuration(duration);
     document.getElementById('layanan')?.scrollIntoView({ behavior: 'smooth' });
   };
