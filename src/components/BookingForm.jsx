@@ -13,13 +13,9 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
   });
 
   const [loading, setLoading] = useState(false);
-
-  // Kalkulasi Total Biaya (Frontend)
   const roomPriceTotal = selectedRoom ? selectedRoom.price * bookingDuration : 0;
   const servicesPriceTotal = selectedServices.reduce((sum, item) => sum + item.price, 0);
   const grandTotal = roomPriceTotal + servicesPriceTotal;
-  
-  // Down Payment (30%) & Pelunasan On-site (70%)
   const dpAmount = Math.round(grandTotal * 0.3);
   const remainingAmount = grandTotal - dpAmount;
 
