@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
+import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 
 // Import Pages
 import Home from './pages/Home';
@@ -27,9 +28,14 @@ function AppLayout() {
       {/* Konten Utama (Routes) */}
       <div className="flex-1">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/booking" element={<BookingPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+
+          {/* Protected Routes Khusus Admin */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
         </Routes>
       </div>
 

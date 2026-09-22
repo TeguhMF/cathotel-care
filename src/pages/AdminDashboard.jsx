@@ -91,8 +91,8 @@ export default function AdminDashboard() {
                 AD
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-800">Admin Utama</p>
-                <p className="text-xs text-slate-500">Superadmin</p>
+                <p className="text-sm font-bold text-slate-800">Admin</p>
+                <p className="text-xs text-slate-500">Kelompok 10</p>
               </div>
             </div>
           </div>
