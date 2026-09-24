@@ -250,13 +250,13 @@ export default function LoginModal({ isOpen, onClose }) {
           <div className="relative w-full h-full flex flex-col items-center justify-center text-center p-12">
             <div className={`absolute transition-all duration-500 ${isSignUp ? 'opacity-100 translate-y-0 delay-300' : 'opacity-0 translate-y-8 invisible'}`}>
               <h2 className="text-4xl font-extrabold text-white mb-4 tracking-tight">WELCOME BACK!</h2>
-              <p className="text-orange-50 mb-8 font-medium">To keep connected with us please login with your personal info.</p>
+              <p className="text-orange-50 mb-8 font-medium">Titipkan dengan aman dan nyaman kucing kesayanganmu.</p>
               <button onClick={() => { setIsSignUp(false); setErrorMsg(''); }} className="px-10 py-3 bg-transparent border-2 border-white/80 hover:bg-white hover:text-orange-600 text-white font-bold rounded-full transition-all uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">Sign In</button>
             </div>
 
             <div className={`absolute transition-all duration-500 ${!isSignUp ? 'opacity-100 translate-y-0 delay-300' : 'opacity-0 -translate-y-8 invisible'}`}>
               <h2 className="text-4xl font-extrabold text-white mb-4 tracking-tight">HELLO, FRIEND!</h2>
-              <p className="text-orange-50 mb-8 font-medium">Enter your personal details and start your journey with us.</p>
+              <p className="text-orange-50 mb-8 font-medium">Tempat nyaman untuk perawatan terbaik kucing kesayanganmu</p>
               <button onClick={() => { setIsSignUp(true); setErrorMsg(''); }} className="px-10 py-3 bg-transparent border-2 border-white/80 hover:bg-white hover:text-orange-600 text-white font-bold rounded-full transition-all uppercase tracking-wider text-sm shadow-[0_0_15px_rgba(255,255,255,0.2)]">Sign Up</button>
             </div>
           </div>
