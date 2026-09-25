@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Phone, Cat, CreditCard, ShieldCheck } from 'lucide-react';
-import api from '../api/axios';
+import api from '../api/axios'; // Tetap menggunakan API instance kamu
 
 export default function BookingForm({ selectedRoom, bookingDuration, selectedServices }) {
   const [formData, setFormData] = useState({
@@ -31,59 +31,66 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
     return date.toISOString().split('T')[0];
   };
 
-const handleSubmitBooking = async (e) => {
+  const handleSubmitBooking = async (e) => {
     e.preventDefault();
+    
+    // Validasi Pilihan Kamar
     if (!selectedRoom) {
       alert("Silakan pilih kamar terlebih dahulu dari Katalog Kamar!");
       return;
     }
 
+    // Pengecekan status login User
+    const userString = localStorage.getItem('user');
+    if (!userString) {
+      alert('Silakan login terlebih dahulu untuk melakukan reservasi!');
+      window.dispatchEvent(new Event('openLoginModal'));
+      return;
+    }
+    
+    const user = JSON.parse(userString);
     setLoading(true);
 
-    try {
-      const checkOutDate = getCheckOutDate(formData.checkInDate, bookingDuration);
+try {
+  const checkOutDate = getCheckOutDate(formData.checkInDate, bookingDuration);
+  const validRoomId = selectedRoom.id || selectedRoom.room_id || 1;
 
-      // Pastikan room_id selalu valid (fallback ke ID 1 jika objek room tidak memiliki field .id)
-      const validRoomId = selectedRoom.id || selectedRoom.room_id || 1;
+  const response = await api.post('http://127.0.0.1:8000/api/bookings', {
+    user_id: user.id,
+    room_id: validRoomId,
+    cat_name: formData.catName,
+    cat_breed: formData.catBreed || 'Domestic',
+    check_in: formData.checkInDate,
+    check_out: checkOutDate,
+    special_notes: formData.notes,
+  });
 
-      // 1. Kirim data reservasi ke Backend Laravel
-      const response = await api.post('/bookings', {
-        room_id: validRoomId,
-        customer_name: formData.ownerName,
-        customer_phone: formData.phone,
-        cat_name: formData.catName,
-        cat_breed: formData.catBreed || 'Domestic',
-        check_in: formData.checkInDate,
-        check_out: checkOutDate,
-        notes: formData.notes,
-      });
+  const { snap_token, booking_code } = response.data.data;
 
-      const { snap_token } = response.data.data;
-
-      // 2. Memunculkan Popup Midtrans Snap
-      if (window.snap && !snap_token.startsWith('DEV-MOCK')) {
-        window.snap.pay(snap_token, {
-          onSuccess: function (result) {
-            alert('Pembayaran DP Berhasil!');
-            console.log('Success:', result);
-          },
-          onPending: function (result) {
-            alert('Menunggu Pembayaran DP!');
-            console.log('Pending:', result);
-          },
-          onError: function (result) {
-            alert('Pembayaran Gagal!');
-            console.log('Error:', result);
-          },
-          onClose: function () {
-            alert('Anda menutup popup pembayaran.');
-          },
-        });
-      } else {
-        // Fallback untuk lingkungan Dev / Mock Token
-        alert(`[DEV/MOCK MODE]\n\nReservasi Berhasil dibuat!\nCode Token: ${snap_token}`);
-      }
-      } catch (error) {
+  // Panggil Popup Midtrans jika script snap sudah termuat
+  if (window.snap && snap_token && !snap_token.startsWith('DEV-MOCK')) {
+    window.snap.pay(snap_token, {
+      onSuccess: function (result) {
+        alert('Pembayaran DP Berhasil! Kode Booking: ' + booking_code);
+        console.log('Success:', result);
+      },
+      onPending: function (result) {
+        alert('Menunggu Pembayaran DP! Kode Booking: ' + booking_code);
+        console.log('Pending:', result);
+      },
+      onError: function (result) {
+        alert('Pembayaran Gagal!');
+        console.log('Error:', result);
+      },
+      onClose: function () {
+        alert('Kamu menutup popup pembayaran sebelum selesai.');
+      },
+    });
+  } else {
+    // Jika tidak ada Midtrans Key, tampilkan notifikasi biasa
+    alert(`[MOCK MODE] Reservasi Berhasil dibuat!\nKode Booking: ${booking_code}\nSnap Token: ${snap_token}`);
+  }
+} catch (error) {
       console.error('Error submitting booking:', error);
       
       // Ambil pesan error spesifik dari Laravel jika ada
@@ -92,7 +99,6 @@ const handleSubmitBooking = async (e) => {
 
       if (responseData) {
         if (responseData.errors) {
-          // Gabungkan pesan validasi Laravel (contoh: check_out after check_in, format tanggal, dll)
           errorMsg = Object.values(responseData.errors).flat().join('\n');
         } else if (responseData.message) {
           errorMsg = responseData.message;

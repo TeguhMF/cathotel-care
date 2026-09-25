@@ -1,63 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, ShieldAlert, Sparkles, Crown, Home } from 'lucide-react';
+import axios from 'axios'; // Pastikan axios di-import
 
-const rooms = [
-  {
-    id: 'standard',
-    name: 'Standard Room',
-    price: 50000,
-    dpRate: 0.3, // 30% DP
-    icon: Home,
-    badge: 'Populer',
-    description: 'Kandang nyaman ukuran standar, ideal untuk 1 ekor kucing dewasa.',
-    features: [
-      'Kandang ukuran 60 x 60 cm',
-      'Ruangan ber-AC (Full AC)',
-      'Litter box & pasir gumpal',
-      'Pemberian makan 2x sehari',
-      'Pembersihan kandang rutin'
-    ],
-    imageUrl: 'src/assets/kandang 1.png'
-  },
-  {
-    id: 'deluxe',
-    name: 'Deluxe Suite',
-    price: 85000,
-    dpRate: 0.3,
-    icon: Sparkles,
-    badge: 'Best Value',
-    description: 'Kandang bertingkat dengan area bermain mini, muat hingga 2 ekor kucing.',
-    features: [
-      'Kandang tingkat 90 x 70 cm',
-      'Ruangan Full AC & Air Purifier',
-      'Area Playtime harian (30 menit)',
-      'Litter box & pasir wangi',
-      'Update foto/video via WA 1x/hari'
-    ],
-    imageUrl: 'src/assets/kandang 2.png'
-  },
-  {
-    id: 'vip',
-    name: 'VIP Executive',
-    price: 130000,
-    dpRate: 0.3,
-    icon: Crown,
-    badge: 'Mewah',
-    description: 'Kamar privat tanpa kandang kawat (Glass Room) dengan fasilitas lengkap.',
-    features: [
-      'Privat Glass Cabin (120 x 100 cm)',
-      'Fasilitas Scratch Post & Cat Tree',
-      'Playtime bebas sepuasnya',
-      'Free Grooming (Min. inap 5 hari)',
-      'Update foto & video harian kapan saja'
-    ],
-    imageUrl: 'src/assets/kandang 3.png'
-  }
-];
+// Import gambar dari folder assets kamu
+import kandang1 from '../assets/kandang 1.png';
+import kandang2 from '../assets/kandang 2.png';
+import kandang3 from '../assets/kandang 3.png';
 
 export default function RoomCatalog({ onSelectRoom }) {
   const [selectedDuration, setSelectedDuration] = useState(1);
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch API Laravel saat komponen dimuat
+  useEffect(() => {
+  const fetchRooms = async () => {
+    try {
+      const res = await axios.get('http://127.0.0.1:8000/api/rooms');
+      if (res.data.success) {
+        const formattedRooms = res.data.data.map(apiRoom => {
+          let IconComp = Home;
+          let badgeText = apiRoom.category;
+          let roomFeatures = [];
+          let roomImage = kandang1; // Gambar Default (Standard)
+
+          if (apiRoom.category === 'Standard') {
+            IconComp = Home; 
+            badgeText = 'Populer'; 
+            roomFeatures = ['Kandang ukuran 60 x 60 cm', 'Ruangan ber-AC (Full AC)', 'Litter box & pasir gumpal', 'Pemberian makan 2x sehari', 'Pembersihan rutin'];
+            roomImage = kandang1; // Pasang foto kandang 1
+          } else if (apiRoom.category === 'Deluxe') {
+            IconComp = Sparkles; 
+            badgeText = 'Best Value'; 
+            roomFeatures = ['Kandang tingkat 90 x 70 cm', 'Ruangan Full AC & Air Purifier', 'Area Playtime harian (30 menit)', 'Litter box & pasir wangi', 'Update foto/video 1x/hari'];
+            roomImage = kandang2; // Pasang foto kandang 2
+          } else {
+            IconComp = Crown; 
+            badgeText = 'Mewah'; 
+            roomFeatures = ['Privat Glass Cabin (120 x 100 cm)', 'Fasilitas Scratch Post & Cat Tree', 'Playtime bebas sepuasnya', 'Free Grooming', 'Update foto & video harian'];
+            roomImage = kandang3; // Pasang foto kandang 3
+          }
+
+          return {
+            id: apiRoom.id,
+            name: apiRoom.name,
+            price: apiRoom.price_per_night,
+            dpRate: 0.3,
+            icon: IconComp,
+            badge: badgeText,
+            description: apiRoom.description,
+            features: roomFeatures,
+            imageUrl: roomImage // Menggunakan gambar impor lokal
+          };
+        });
+        
+        setRooms(formattedRooms);
+      }
+    } catch (error) {
+      console.error('Gagal memuat katalog kamar:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRooms();
+}, []);
   return (
     <section id="katalog" className="py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -98,82 +105,88 @@ export default function RoomCatalog({ onSelectRoom }) {
         </div>
 
         {/* Grid Kartu Kamar */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {rooms.map((room) => {
-            const Icon = room.icon;
-            const totalPrice = room.price * selectedDuration;
-            const dpAmount = totalPrice * room.dpRate;
+        {loading ? (
+           <div className="flex justify-center items-center py-10 w-full col-span-3">
+             <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {rooms.map((room) => {
+              const Icon = room.icon;
+              const totalPrice = room.price * selectedDuration;
+              const dpAmount = totalPrice * room.dpRate;
 
-            return (
-              <div 
-                key={room.id}
-                className="bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col overflow-hidden group"
-              >
-                {/* Gambar Kamar */}
-                <div className="relative h-48 overflow-hidden">
-                  <img 
-                    src={room.imageUrl} 
-                    alt={room.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
-                    {room.badge}
-                  </div>
-                </div>
-
-                {/* Isian Info Kamar */}
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon className="w-5 h-5 text-orange-500" />
-                      <h3 className="text-xl font-bold text-slate-800">{room.name}</h3>
+              return (
+                <div 
+                  key={room.id}
+                  className="bg-white rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col overflow-hidden group"
+                >
+                  {/* Gambar Kamar */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={room.imageUrl} 
+                      alt={room.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                      {room.badge}
                     </div>
-                    <p className="text-xs text-slate-500 mb-4">{room.description}</p>
-
-                    {/* Rincian Harga & Estimasi DP */}
-                    <div className="bg-orange-50/60 p-4 rounded-2xl border border-orange-100 mb-6">
-                      <div className="flex items-baseline justify-between mb-1">
-                        <span className="text-xs text-slate-500">Harga / Malam:</span>
-                        <span className="text-sm font-bold text-slate-800">
-                          Rp {room.price.toLocaleString('id-ID')}
-                        </span>
-                      </div>
-                      <div className="flex items-baseline justify-between pt-2 border-t border-orange-100">
-                        <span className="text-xs font-semibold text-orange-600">
-                          Estimasi DP (30%):
-                        </span>
-                        <span className="text-lg font-extrabold text-orange-600">
-                          Rp {dpAmount.toLocaleString('id-ID')}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-1 text-right">
-                        Sisa pelunasan di lokasi
-                      </p>
-                    </div>
-
-                    {/* Checklist Fitur */}
-                    <ul className="space-y-2.5 mb-6">
-                      {room.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-xs text-slate-600">
-                          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
 
-                  {/* Tombol Pilih Kamar */}
-                  <button
-                    onClick={() => onSelectRoom(room, selectedDuration)}
-                    className="w-full py-3 bg-slate-900 hover:bg-orange-500 text-white font-bold text-sm rounded-xl transition-all shadow-md"
-                  >
-                    Pilih & Lanjut Booking
-                  </button>
+                  {/* Isian Info Kamar */}
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="w-5 h-5 text-orange-500" />
+                        <h3 className="text-xl font-bold text-slate-800">{room.name}</h3>
+                      </div>
+                      <p className="text-xs text-slate-500 mb-4">{room.description}</p>
+
+                      {/* Rincian Harga & Estimasi DP */}
+                      <div className="bg-orange-50/60 p-4 rounded-2xl border border-orange-100 mb-6">
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span className="text-xs text-slate-500">Harga / Malam:</span>
+                          <span className="text-sm font-bold text-slate-800">
+                            Rp {room.price.toLocaleString('id-ID')}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline justify-between pt-2 border-t border-orange-100">
+                          <span className="text-xs font-semibold text-orange-600">
+                            Estimasi DP (30%):
+                          </span>
+                          <span className="text-lg font-extrabold text-orange-600">
+                            Rp {dpAmount.toLocaleString('id-ID')}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1 text-right">
+                          Sisa pelunasan di lokasi
+                        </p>
+                      </div>
+
+                      {/* Checklist Fitur */}
+                      <ul className="space-y-2.5 mb-6">
+                        {room.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-xs text-slate-600">
+                            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Tombol Pilih Kamar */}
+                    <button
+                      onClick={() => onSelectRoom(room, selectedDuration)}
+                      className="w-full py-3 bg-slate-900 hover:bg-orange-500 text-white font-bold text-sm rounded-xl transition-all shadow-md"
+                    >
+                      Pilih & Lanjut Booking
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
       </div>
     </section>
