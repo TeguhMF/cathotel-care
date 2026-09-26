@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Phone, Cat, CreditCard, ShieldCheck } from 'lucide-react';
-import api from '../api/axios'; // Tetap menggunakan API instance kamu
+import api from '../api/axios'; 
 
 export default function BookingForm({ selectedRoom, bookingDuration, selectedServices }) {
   const [formData, setFormData] = useState({
@@ -23,7 +23,6 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Menghitung tanggal check-out berdasarkan check-in + durasi
   const getCheckOutDate = (checkInStr, durationDays) => {
     if (!checkInStr) return '';
     const date = new Date(checkInStr);

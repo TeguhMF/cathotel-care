@@ -6,6 +6,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+import BookingHistory from './components/BookingHistory';
+import ProfilePage from './components/ProfilePage';
 
 // Import Pages
 import Home from './pages/Home';
@@ -31,6 +33,8 @@ function AppLayout() {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/booking" element={<BookingPage />} />
+          <Route path="/history" element={<BookingHistory />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
           {/* Protected Routes Khusus Admin */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>

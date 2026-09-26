@@ -6,7 +6,6 @@ export default function Navbar({ onOpenLogin }) {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Memeriksa status login saat komponen dipasang
   useEffect(() => {
     const checkUser = () => {
       const userString = localStorage.getItem('user');
@@ -19,23 +18,19 @@ export default function Navbar({ onOpenLogin }) {
 
     checkUser();
 
-// Dengarkan event custom dan storage
-  window.addEventListener('userLoginStateChanged', checkUser);
-  window.addEventListener('storage', checkUser);
+    window.addEventListener('userLoginStateChanged', checkUser);
+    window.addEventListener('storage', checkUser);
 
-  return () => {
-    window.removeEventListener('userLoginStateChanged', checkUser);
-    window.removeEventListener('storage', checkUser);
-  };
-}, []);
-    
+    return () => {
+      window.removeEventListener('userLoginStateChanged', checkUser);
+      window.removeEventListener('storage', checkUser);
+    };
+  }, []);
 
-  // Fungsi Logout
   const handleLogout = () => {
     localStorage.removeItem('user');
     setUser(null);
     navigate('/');
-    window.location.reload(); // Reset state aplikasi secara menyeluruh
   };
 
   return (
@@ -57,7 +52,7 @@ export default function Navbar({ onOpenLogin }) {
           </div>
         </Link>
 
-        {/* Menu Navigasi */}
+        {/* Menu Navigasi Utama */}
         <nav className="hidden md:flex items-center gap-8 font-medium text-slate-200">
           <Link to="/" className="hover:text-orange-400 transition-colors">Beranda</Link>
           <a href="/#fasilitas" className="hover:text-orange-400 transition-colors">Fasilitas</a>
@@ -68,14 +63,11 @@ export default function Navbar({ onOpenLogin }) {
         {/* AREA AKUN / LOGIN BUTTON */}
         <div className="flex items-center gap-4">
           {user ? (
-            /* TAMPILAN SAAT USER SUDAH LOGIN */
             <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
-              
-              {/* TOMBOL PROFIL USER */}
               <Link 
                 to="/profile" 
                 className="flex items-center gap-2 text-white hover:text-orange-400 transition-colors"
-                title="Lihat Profil"
+                title="Lihat Profil & Riwayat"
               >
                 <div className="p-1.5 bg-orange-500/20 rounded-xl border border-orange-500/30 text-orange-400">
                   <UserIcon className="w-4 h-4" />
@@ -85,7 +77,6 @@ export default function Navbar({ onOpenLogin }) {
 
               <div className="w-px h-4 bg-white/20"></div>
 
-              {/* TOMBOL LOGOUT */}
               <button 
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
@@ -94,10 +85,8 @@ export default function Navbar({ onOpenLogin }) {
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Logout</span>
               </button>
-
             </div>
           ) : (
-            /* TAMPILAN SAAT BELUM LOGIN */
             <button 
               onClick={onOpenLogin}
               className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 transition-all"
