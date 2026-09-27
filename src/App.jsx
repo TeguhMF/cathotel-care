@@ -8,6 +8,7 @@ import LoginModal from './components/LoginModal';
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 import BookingHistory from './components/BookingHistory';
 import ProfilePage from './components/ProfilePage';
+import AdminBookings from './components/AdminBookings';
 
 // Import Pages
 import Home from './pages/Home';
@@ -39,6 +40,7 @@ function AppLayout() {
           {/* Protected Routes Khusus Admin */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/bookings" element={<AdminBookings />} />
           </Route>
         </Routes>
       </div>

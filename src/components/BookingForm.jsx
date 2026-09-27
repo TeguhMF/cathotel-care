@@ -32,8 +32,6 @@ export default function BookingForm({ selectedRoom, bookingDuration, selectedSer
 
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
-    
-    // Validasi Pilihan Kamar
     if (!selectedRoom) {
       alert("Silakan pilih kamar terlebih dahulu dari Katalog Kamar!");
       return;
