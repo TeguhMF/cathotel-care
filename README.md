@@ -1,16 +1,58 @@
-# React + Vite
+# CatHotel Care - Aplikasi Web Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Repositori ini berisi kode antarmuka pengguna (frontend) untuk aplikasi web CatHotel Care. Dibangun menggunakan React, Tailwind CSS, dan Vite, aplikasi ini menyediakan antarmuka pemesanan untuk pelanggan serta panel kontrol manajemen untuk administrator.
 
-Currently, two official plugins are available:
+## Teknologi dan Pustaka
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Framework Utama:** React (Vite)
+- **Desain Antarmuka:** Tailwind CSS
+- **Ikonografi:** Lucide Icons
+- **HTTP Client:** Axios
+- **Routing:** React Router DOM (v6+)
+- **Utilitas Ekspor Data:** SheetJS (`xlsx`), jsPDF, jsPDF-AutoTable
+- **Integrasi Pembayaran:** Midtrans Snap JS Integration
 
-## React Compiler
+## Modul dan Fitur Aplikasi
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Modul Katalog dan Pemesanan:**
+   - Pengambilan data kamar secara aktual dari API backend.
+   - Formulir pemesanan interaktif dengan kalkulasi otomatis total biaya dan DP 30%.
+   - Integrasi pop-up pembayaran Midtrans Snap.
 
-## Expanding the Oxlint configuration
+2. **Portal Pelanggan (`/profile`):**
+   - Halaman terintegrasi untuk informasi akun dan riwayat pemesanan.
+   - Indikator status riil untuk pembayaran (`PAID`, `UNPAID`) dan progres reservasi (`PENDING`, `CONFIRMED`, `CHECKED_IN`, `CHECKED_OUT`, `CANCELLED`).
+   - Fitur pembayaran ulang untuk transaksi DP yang belum diselesaikan.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+3. **Dashboard Manajemen Admin (`/admin/bookings`):**
+   - Ringkasan statistik operasional: Total Reservasi, Kucing Menginap, Total Pendapatan DP, dan Total Pelanggan.
+   - Tabel data reservasi dengan filter berdasarkan status dan pencarian kata kunci (Kode Booking, Nama Pelanggan, Nama Anabul).
+   - Kontrol perubahan status reservasi secara aktual (`Confirm`, `Check-In`, `Check-Out`, `Cancel`).
+   - Ekspor data laporan ke format `.xlsx` (Excel) untuk reservasi dan `.pdf` untuk data pelanggan.
+
+## Panduan Instalasi Lokal
+
+```bash
+# 1. Kloning repositori
+git clone [https://github.com/TeguhMF/cathotel-care-frontend.git](https://github.com/username-anda/cathotel-care-frontend.git)
+cd cathotel-care-frontend
+
+# 2. Install dependensi Node.js
+npm install
+
+# 3. Jalankan Server Pengembang (berjalan pada http://localhost:5173)
+npm run dev
+
+```
+```HTML
+<script 
+  src="[https://app.sandbox.midtrans.com/snap/snap.js](https://app.sandbox.midtrans.com/snap/snap.js)" 
+  data-client-key="KUNCI_CLIENT_MIDTRANS_ANDA">
+</script>
+```
+```bash
+npm run build
+
+
+
+
