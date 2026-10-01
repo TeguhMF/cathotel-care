@@ -1,4 +1,4 @@
-# CatHotel Care - Aplikasi Web Frontend
+# CatHotel Care FronEnd
 
 Repositori ini berisi kode antarmuka pengguna (frontend) untuk aplikasi web CatHotel Care. Dibangun menggunakan React, Tailwind CSS, dan Vite, aplikasi ini menyediakan antarmuka pemesanan untuk pelanggan serta panel kontrol manajemen untuk administrator.
 
