@@ -1,4 +1,4 @@
-# CatHotel Care FronEnd
+# CatHotel Care FRONTEND
 
 Repositori ini berisi kode antarmuka pengguna (frontend) untuk aplikasi web CatHotel Care. Dibangun menggunakan React, Tailwind CSS, dan Vite, aplikasi ini menyediakan antarmuka pemesanan untuk pelanggan serta panel kontrol manajemen untuk administrator.
 
@@ -34,8 +34,8 @@ Repositori ini berisi kode antarmuka pengguna (frontend) untuk aplikasi web CatH
 
 ```bash
 # 1. Kloning repositori
-git clone [https://github.com/TeguhMF/cathotel-care-frontend.git](https://github.com/username-anda/cathotel-care-frontend.git)
-cd cathotel-care-frontend
+git clone [https://github.com/TeguhMF/cathotel-care.git](https://github.com/TeguhMF/cathotel-care.git)
+cd cathotel-care
 
 # 2. Install dependensi Node.js
 npm install
