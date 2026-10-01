@@ -38,7 +38,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12">
           <div className="w-full md:w-1/2">
             <img 
-              src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=800&q=80" 
+              src="src/assets/cat.png" 
               alt="Tentang CatHotel Care" 
               className="rounded-3xl shadow-xl border-4 border-white object-cover h-96 w-full"
             />

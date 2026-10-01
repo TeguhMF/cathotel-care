@@ -7,17 +7,21 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Import Library Export
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('dashboard');
   
-  // State Data Real dari Backend
+  // State Data Real
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Load Data saat komponen dipasang
   useEffect(() => {
     fetchAdminBookings();
   }, []);
@@ -34,22 +38,24 @@ export default function AdminDashboard() {
     }
   };
 
-  // Fungsi Aksi Update Status
   const handleUpdateStatus = async (bookingId, newStatus) => {
-    const confirmMessage = `Apakah Anda yakin ingin mengubah status booking ini menjadi "${newStatus.replace('_', ' ').toUpperCase()}"?`;
-    if (!window.confirm(confirmMessage)) return;
+      const confirmMessage = `Ubah status booking menjadi "${newStatus.replace('_', ' ').toUpperCase()}"?`;
+      if (!window.confirm(confirmMessage)) return;
 
-    try {
-      await axios.patch(`http://127.0.0.1:8000/api/admin/bookings/${bookingId}/status`, {
-        status: newStatus,
-      });
-      alert('Status pesanan berhasil diperbarui!');
-      fetchAdminBookings();
-    } catch (error) {
-      console.error('Gagal memperbarui status:', error);
-      alert('Gagal mengubah status booking.');
-    }
-  };
+      try {
+        const response = await axios.patch(`http://127.0.0.1:8000/api/admin/bookings/${bookingId}/status`, {
+          status: newStatus,
+        });
+
+        if (response.data.success) {
+          alert('Status pesanan berhasil diperbarui!');
+          fetchAdminBookings(); // Refresh data otomatis
+        }
+      } catch (error) {
+        console.error('Gagal memperbarui status:', error.response?.data || error.message);
+        alert('Gagal mengubah status: ' + (error.response?.data?.message || 'Terjadi kesalahan server'));
+      }
+    };
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -57,23 +63,91 @@ export default function AdminDashboard() {
     navigate('/');
   };
 
-  const handleExport = (format, type) => {
-    alert(`Memproses Export Data ${type} ke format ${format.toUpperCase()}...\nFile simulasi siap diunduh!`);
+  // ==========================================
+  // FUNGSI EXPORT DATA EXCEL & PDF RIIL
+  // ==========================================
+  
+  // 1. Export Excel (Reservasi)
+  const exportToExcelReservasi = () => {
+    if (bookings.length === 0) {
+      alert('Tidak ada data reservasi untuk diexport!');
+      return;
+    }
+
+    const excelData = bookings.map((b, index) => ({
+      No: index + 1,
+      'Kode Booking': b.booking_code,
+      'Nama Customer': b.user?.name || 'Guest',
+      Email: b.user?.email || '-',
+      'Nama Anabul': b.cat_name,
+      Ras: b.cat_breed || 'Domestic',
+      Kamar: b.room?.name || '-',
+      'Check-In': b.check_in,
+      'Check-Out': b.check_out,
+      Malam: b.total_nights,
+      'Total Harga (Rp)': b.total_price,
+      'DP (30%) (Rp)': Math.round(b.total_price * 0.3),
+      'Status Bayar': b.payment_status.toUpperCase(),
+      'Status Pesanan': b.status.replace('_', ' ').toUpperCase(),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Laporan Reservasi');
+
+    XLSX.writeFile(workbook, `Laporan_Reservasi_CatHotel_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
-  // Kalkulasi Statistik Riil
+  // 2. Export PDF (Pelanggan)
+  const exportToPDFPelanggan = () => {
+    if (uniqueCustomers.length === 0) {
+      alert('Tidak ada data pelanggan untuk diexport!');
+      return;
+    }
+
+    const doc = new jsPDF();
+    
+    // Header Laporan
+    doc.setFontSize(16);
+    doc.text('LAPORAN DATA PELANGGAN CATHOTEL CARE', 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Tanggal Cetak: ${new Date().toLocaleDateString('id-ID')}`, 14, 28);
+
+    // Data Tabel
+    const tableColumn = ['No', 'Nama Pelanggan', 'Email', 'No. Telepon', 'Total Transaksi'];
+    const tableRows = uniqueCustomers.map((cust, idx) => {
+      const userBookings = bookings.filter(b => b.user_id === cust.id);
+      return [
+        idx + 1,
+        cust.name || '-',
+        cust.email || '-',
+        cust.phone || '-',
+        `${userBookings.length} Kali`
+      ];
+    });
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 34,
+      theme: 'grid',
+      headStyles: { fillColor: [249, 115, 22] } // Warna Orange CatHotel
+    });
+
+    doc.save(`Laporan_Pelanggan_CatHotel_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
+  // Kalkulasi Statistik
   const totalReservasi = bookings.length;
   const kucingMenginap = bookings.filter(b => b.status === 'checked_in').length;
   const totalPendapatan = bookings
     .filter(b => b.payment_status === 'paid')
     .reduce((sum, item) => sum + Math.round(item.total_price * 0.3), 0);
   
-  // Dapatkan daftar unik pelanggan
   const uniqueCustomers = Array.from(new Set(bookings.map(b => b.user_id)))
     .map(id => bookings.find(b => b.user_id === id)?.user)
     .filter(Boolean);
 
-  // Filter Data untuk Tabel
   const filteredBookings = bookings.filter((item) => {
     const matchesSearch =
       item.booking_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -127,12 +201,11 @@ export default function AdminDashboard() {
           </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-800 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800 hover:text-white transition-all text-sm">
-            <Settings className="w-5 h-5" />
-            <span>Pengaturan</span>
-          </button>
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all text-sm font-medium">
+        <div className="p-4 border-t border-slate-800">
+          <button 
+            onClick={handleLogout} 
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all text-sm font-medium cursor-pointer"
+          >
             <LogOut className="w-5 h-5" />
             <span>Keluar</span>
           </button>
@@ -182,7 +255,6 @@ export default function AdminDashboard() {
                 <p className="text-sm text-slate-500 mt-1">Pantau performa penitipan dan reservasi CatHotel Care.</p>
               </div>
 
-              {/* STATISTIK RIIL */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-4">
                   <div className="p-4 rounded-2xl bg-blue-50 text-blue-500">
@@ -227,7 +299,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* TABEL PREVIEW TERBARU */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">Pesanan Terbaru</h3>
                 {bookings.length === 0 ? (
@@ -278,9 +349,10 @@ export default function AdminDashboard() {
                   <p className="text-sm text-slate-500 mt-1">Daftar seluruh transaksi pemesanan dan pelunasan DP.</p>
                 </div>
                 <div className="flex gap-3">
+                  {/* Tombol Export Excel Berfungsi */}
                   <button 
-                    onClick={() => handleExport('excel', 'Reservasi')}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-100 transition-all"
+                    onClick={exportToExcelReservasi}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-100 transition-all cursor-pointer shadow-sm active:scale-95"
                   >
                     <Download className="w-4 h-4" />
                     <span>Export Excel</span>
@@ -288,7 +360,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* FILTER STATUS */}
               <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
                 {['all', 'pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'].map((st) => (
                   <button
@@ -305,7 +376,6 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* TABEL LENGKAP RESERVASI */}
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 {loading ? (
                   <div className="py-20 text-center text-slate-400">Memuat data reservasi...</div>
@@ -417,6 +487,16 @@ export default function AdminDashboard() {
                 <div>
                   <h1 className="text-2xl font-bold text-slate-800">Data Pelanggan</h1>
                   <p className="text-sm text-slate-500 mt-1">Daftar pemilik kucing yang pernah melakukan reservasi.</p>
+                </div>
+                <div>
+                  {/* Tombol Export PDF Berfungsi */}
+                  <button 
+                    onClick={exportToPDFPelanggan}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-semibold hover:bg-rose-100 transition-all cursor-pointer shadow-sm active:scale-95"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export PDF</span>
+                  </button>
                 </div>
               </div>
 

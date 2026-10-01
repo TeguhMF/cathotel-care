@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 
 // Import Components
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import Footer from './components/footer';
 import LoginModal from './components/LoginModal';
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 import BookingHistory from './components/BookingHistory';
